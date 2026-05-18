@@ -41,7 +41,8 @@ jobs:
           context: .
           push: true
           labels: ${{ steps.meta.outputs.labels }}
-          tags: zhuluchangfen/${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.title'] }}:${{ steps.meta.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
+            # zhuluchangfen/${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.title'] }}:${{ steps.meta.outputs.tags }}
 
 #          platforms: |
 #            linux/amd64
