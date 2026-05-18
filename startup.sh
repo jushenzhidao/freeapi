@@ -39,4 +39,4 @@
 #  exit 1
 #  ;;
 #esac
-python main.py
+python qwen_fastapi.py
