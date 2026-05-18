@@ -1,4 +1,6 @@
+from loguru import logger
 def main():
+    logger.info('Hello from freeapi!')
     print("Hello from freeapi!")
 
 
