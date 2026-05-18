@@ -41,7 +41,7 @@ jobs:
           context: .
           push: true
           labels: ${{ steps.meta.outputs.labels }}
-          tags: chatfire/${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.title'] }}:${{ steps.meta.outputs.tags }}
+          tags: freeapi/${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.title'] }}:${{ steps.meta.outputs.tags }}
 
 #          platforms: |
 #            linux/amd64
