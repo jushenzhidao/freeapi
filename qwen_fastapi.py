@@ -9,6 +9,12 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from loguru import logger
 from openai import AsyncOpenAI
+from openai.types import ResponsesModel
+from sse_starlette import EventSourceResponse
+# from meutils.apis import
+from openai.types.chat.chat_completion_chunk import ChatCompletionChunk, ChoiceDelta
+from openai.types.chat.chat_completion_chunk import Choice as ChoiceChunk
+from openai.types.chat.chat_completion import ChatCompletion, Choice, ChatCompletionMessage
 
 app = FastAPI(title="Qwen API")
 
@@ -21,15 +27,12 @@ HEADERS = {
 
 
 def verify_auth(authorization: str) -> str:
-    if not authorization or not authorization.startswith("Basic "):
+    if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
     try:
-        decoded = base64.b64decode(authorization[6:]).decode()
-        email, password = decoded.split(":", 1)
-    except Exception:
+        email = authorization[7:]  # base64.b64decode(authorization[7:]).decode()
+    except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid Authorization format")
-    if password != FIXED_PASSWORD:
-        raise HTTPException(status_code=401, detail="Invalid password")
     return email
 
 
@@ -48,9 +51,30 @@ async def login_and_create_chat(client: httpx.AsyncClient, email: str) -> tuple[
     return token, chat_id
 
 
+async def create_chat_completion_chunk(resp,model):
+    # import meutils
+    async for chunk in resp.aiter_lines():
+        logger.info(chunk)
+        if chunk:
+            choice = json.loads(chunk[6:]).get('choices')
+            delta = choice[0]
+            yield ChatCompletionChunk(object='chat.completion.chunk', id='1', created=int(time.time()), model=model,
+                                choices=[ChoiceChunk(delta=ChoiceDelta(**delta),index=0)]
+                                                    )
+            # yield "[DONE]"
+async def xx():
+    for i in range(5):
+        yield 5
+
+@app.get("/v1/demo")
+async def demo():
+    print('xxxxx')
+    return {'code': 200}
+
+
 @app.post("/v1/chat/completions")
 async def chat_completions(request: Request):
-    auth = request.headers.get("Authorization", "")
+    auth = request.headers.get("Authorization", "xxxx")
     email = verify_auth(auth)
 
     req_body = await request.json()
@@ -106,63 +130,46 @@ async def chat_completions(request: Request):
             http_client=client,
             default_headers=request_headers,
         )
+        async with client.stream(
+                "POST",
+                f"{BASE_URL}/api/v2/chat/completions?chat_id={chat_id}",
+                json=chat_body,
+                headers=request_headers
+        ) as resp:
 
-        if stream:
-            async def generate():
-                try:
-                    x = await c.chat.completions.create(
-                        model=model,
-                        stream=True,
-                        messages=messages,
-                        extra_body=chat_body,
-                        extra_query={"chat_id": chat_id},
-                    )
-                    async for chunk in x:
-                        yield f"data: {chunk.model_dump_json()}\n\n"
-                    yield "data: [DONE]\n\n"
-                except Exception as e:
-                    logger.error(f"Stream error: {e}")
-                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            resp.raise_for_status()
+            if stream:
 
-            return StreamingResponse(
-                generate(),
-                media_type="text/event-stream",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "X-Accel-Buffering": "no",
-                },
-            )
-        else:
-            full_content = ""
-            x = await c.chat.completions.create(
-                model=model,
-                stream=True,
-                messages=messages,
-                extra_body=chat_body,
-                extra_query={"chat_id": chat_id},
-            )
-            async for chunk in x:
-                content = chunk.choices[0].delta.content
-                if content:
-                    full_content += content
+                resp.raise_for_status()
 
-            return {
-                "id": f"chatcmpl-{uuid.uuid4()}",
-                "object": "chat.completion",
-                "created": timestamp,
-                "model": model,
-                "choices": [
-                    {
-                        "index": 0,
-                        "message": {
-                            "role": "assistant",
-                            "content": full_content,
-                        },
-                        "finish_reason": "stop",
-                    }
-                ],
-            }
+                # --- 4. 处理 SSE 流 ---
+                # aiter_lines() 是异步迭代器
+                # return EventSourceResponse(xx())
+                return EventSourceResponse(create_chat_completion_chunk(resp,model))
+
+            else:
+
+                # from openai.types.chat.chat_completion_chunk import
+                full_content = ''
+                async for chunk in resp.aiter_lines():
+                    if chunk:
+                        # 去除空白字符并解码
+                        choice = json.loads(chunk[6:]).get('choices')
+                        if choice:
+                            content = choice[0]['delta']['content']
+                            logger.info(content)
+                            if content:
+                                full_content += content
+
+                return ChatCompletion(id=f"chatcmpl-{uuid.uuid4().int}", model=model,
+                                      choices=[Choice(finish_reason='stop', index=0,
+                                                      message=ChatCompletionMessage(content=full_content,
+                                                                                    role='assistant'))],
+                                      created=int(time.time()),
+                                      object='chat.completion', )
+
+
+
     finally:
         await client.aclose()
 
@@ -225,10 +232,10 @@ async def images_generations(request: Request):
 
         image_urls = []
         async with client.stream(
-            "POST",
-            f"{BASE_URL}/api/v2/chat/completions?chat_id={chat_id}",
-            json=chat_body,
-            headers=request_headers,
+                "POST",
+                f"{BASE_URL}/api/v2/chat/completions?chat_id={chat_id}",
+                json=chat_body,
+                headers=request_headers,
         ) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():
@@ -249,7 +256,8 @@ async def images_generations(request: Request):
                                     delta = choice.get("delta", {})
                                     if "image_url" in delta:
                                         image_urls.append(delta["image_url"])
-                            if data.get("content") and isinstance(data["content"], str) and data["content"].startswith("http"):
+                            if data.get("content") and isinstance(data["content"], str) and data["content"].startswith(
+                                    "http"):
                                 image_urls.append(data["content"])
                             if "data" in data and isinstance(data["data"], list):
                                 for item in data["data"]:
@@ -267,4 +275,4 @@ async def images_generations(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("qwen_fastapi:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("qwen_fastapi:app", port=32003)

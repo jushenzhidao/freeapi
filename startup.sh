@@ -39,4 +39,4 @@
 #  exit 1
 #  ;;
 #esac
-python qwen_fastapi.py
+python empty_interface.py
