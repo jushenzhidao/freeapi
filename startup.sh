@@ -50,6 +50,3 @@ python -m gunicorn empty_interface:app \
   --threads 2 \
   --timeout 120 \
   --max-requests 4096 --max-requests-jitter 64
-
-
-uvicorn empty_interface:app --reload --port 8000
