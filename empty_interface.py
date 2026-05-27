@@ -7,7 +7,7 @@ from openai.types import Video, VideoCreateError, VideoSeconds, VideoModel, Vide
 app = FastAPI(title="Empty API")
 
 
-@app.post('/v/videos')
+@app.post('/v1/videos')
 async def empty(request: Request) -> Video:
     print("=" * 60)
     print(f"【Method】 {request.method}")
@@ -49,4 +49,4 @@ async def empty(request: Request) -> Video:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, port=32003)
+    uvicorn.run(app, host="0.0.0.0",port=32003)
