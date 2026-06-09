@@ -1,4 +1,3 @@
-# 使用官方 Python 基础镜像
 FROM python:3.13-slim
 
 LABEL maintainer="313303303@qq.com"
@@ -21,17 +20,20 @@ ENV PATH="/root/.local/bin:${PATH}"
 
 WORKDIR /app
 
-# ✅ 先只复制依赖文件，利用缓存
+# 先复制依赖声明（利用缓存层）
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv venv /app/.venv && \
-    uv pip sync uv.lock
+RUN uv venv /app/.venv && \
+    uv pip sync uv.lock && \
+    rm -rf /root/.cache/uv
 
 ENV PATH="/app/.venv/bin:${PATH}"
 
-# ✅ 再复制源码（这层会变，上面不变）
-COPY . /app
+# 复制项目源码（适配你的结构）
+COPY app/ ./app/
+COPY main.py startup.sh qwen_fastapi.py ./
+COPY tests/ ./tests/ 2>/dev/null || true
 
+# 创建非 root 用户
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
     chown -R appuser /app
 USER appuser
