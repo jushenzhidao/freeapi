@@ -1,108 +1,42 @@
-# 使用官方python基础镜像
-FROM python:3.10-slim
+# 使用官方 Python 基础镜像
+FROM python:3.13-slim
+
 LABEL maintainer="313303303@qq.com"
 
-
-# 依赖
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get update && apt-get install -y nodejs curl netcat-openbsd
-
-
-# Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
-
-# Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 ENV TZ=Asia/Shanghai
 
-# 任务类型
-ENV WORKER_TYPE=fastapi
-ENV FLOWER_UNAUTHENTICATED_API=true
-
-# 环境变量
-#ENV HF_ENDPOINT=http://hf.chatfire.cc
-#ENV HF_TOKEN=xx
-
-
-# FEISHU_APP_SECRET
-# MINIO_ACCESS_KEY
-ENV FEISHU_APP_ID=cli_a45451400dfd900b
-ENV MINIO_ENDPOINT=s3.ffire.cc
-
-ENV LOGFIRE_TOKEN=pylf_v1_us_hnXhNd2W6F2HXZDN7TgKDp9B6vRcZmHShjv44d4809wY
-ENV LOGFIRE_TOKEN_TASKS=pylf_v1_us_l2S3N3VGm1qk3vN1h06DkH4KPKHxqvP6prmTQQlDcsMB
-
-
-# 自建
-ENV OPENAI_BASE_URL=https://api.chatfire.cn/v1
-ENV DIFY_BASE_URL=http://dify.chatfire.cn/v1
-ENV SEARXNG_BASE_URL=https://search.chatfire.cn
-ENV WEBHOOK_URL=https://oneapi.chatfire.cn/sys/webhook
-
-# 代理
-ENV KDLAPI_SECRET_ID=o0xwup2fyhkd5qelqvoo
-
-# 第三方
-ENV GOD_BASE_URL=https://api.gptgod.online/v1
-
-ENV STEP_BASE_URL=https://api.stepfun.com/v1
-ENV GROQ_BASE_URL=https://api.groq.com/openai/v1
-ENV MOONSHOT_BASE_URL=https://api.moonshot.cn/v1
-ENV DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
-ENV ZHIPUAI_BASE_URL=https://open.bigmodel.cn/api/paas/v4
-ENV HUNYUAN_BASE_URL=https://api.hunyuan.cloud.tencent.com/v1
-ENV SILICONFLOW_BASE_URL=https://api.siliconflow.cn/v1
-ENV TOGETHER_BASE_URL=https://api.together.xyz/v1
-ENV BAICHUAN_BASE_URL=https://api.baichuan-ai.com/v1
-ENV DASHSCOPE_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-ENV DEEPINFRA_BASE_URL=https://api.deepinfra.com/v1/openai
-ENV MODELSCOPE_BASE_URL=https://api-inference.modelscope.cn/v1
-ENV OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-ENV VOLC_BASE_URL=https://ark.cn-beijing.volces.com/api/v3
-ENV PPIO_BASE_URL=https://api.ppinfra.com/v3/openai
-ENV OLLAMA_BASE_URL=https://ollama.com/v1
-
-# 暴露端口
 EXPOSE 8000
 
-# 健康检查
-HEALTHCHECK --start-period=30s --interval=30s --timeout=3s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+# 安装 uv
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+ENV PATH="/root/.local/bin:${PATH}"
 
-# Install pip requirements.txt
-COPY requirements.txt .
-
-RUN python -m  pip install --no-cache-dir -U -r requirements.txt
-
-
-
-# RUN python -m pip install --no-cache-dir playwright && python -m playwright install-deps && python -m playwright install
-
-
-# 创建工作目录
 WORKDIR /app
 
-# 复制当前目录下的所有文件到工作目录
+# ✅ 先只复制依赖文件，利用缓存
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv venv /app/.venv && \
+    uv pip sync uv.lock
+
+ENV PATH="/app/.venv/bin:${PATH}"
+
+# ✅ 再复制源码（这层会变，上面不变）
 COPY . /app
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
+    chown -R appuser /app
 USER appuser
 
-
-
-
-# 容器启动时运行命令
-# 设置容器启动后默认执行的命令及其参数。不过，CMD 指定的命令可以通过 docker run 命令行参数来覆盖。它主要用于为容器设定默认启动行为。如果 Dockerfile 中有多个 CMD 指令，只有最后一个生效。
-# docker run myimage <bash> # bash 将会替换掉Dockerfile中的  CMD 指令。
-# ${WORKERS:-1} 默认1
-#ENV WORKERS=${WORKERS:-1}
-
-#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "3"]
-
-#CMD ["python",  "-m",  "meutils.clis.server",  "gunicorn-run",  "main:app",  "--port",  "8000",  "--workers", "${WORKERS:-1}",  "--threads",  "2",  "--timeout",  "100"]
-
-#CMD ["sh", "-c", "sh rq-worker.sh & python -m meutils.clis.server gunicorn-run main:app --port 8000 --workers ${WORKERS:-1} --threads 2"]
+HEALTHCHECK --start-period=30s --interval=30s --timeout=3s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["sh", "-c", "sh ./startup.sh"]

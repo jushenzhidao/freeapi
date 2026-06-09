@@ -1,0 +1,29 @@
+# 虚拟环境
+.venv/
+
+# PyCharm / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 测试
+.pytest_cache/
+.coverage
+
+# 本地配置
+.env
+.python-version
+
+# 日志
+*.log

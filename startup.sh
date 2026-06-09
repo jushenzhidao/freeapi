@@ -40,13 +40,28 @@
 #  ;;
 #esac
 
+#docker run --name empty_service -p 39008:8000 -d zhuluchangfen/chatfire
 
+set -e
 
+WORKERS="${WORKERS:-2}"
+PORT="${PORT:-8000}"
 
-python -m gunicorn empty_interface:app \
-  -k uvicorn.workers.UvicornWorker \
-  --bind 0.0.0.0:8000 \
-  --workers ${WORKERS:-1} \
-  --threads 2 \
-  --timeout 120 \
-  --max-requests 4096 --max-requests-jitter 64
+exec python -m gunicorn main:app \
+    -k uvicorn.workers.UvicornWorker \
+    --bind "0.0.0.0:${PORT}" \
+    --workers "${WORKERS}" \
+    --threads 2 \
+    --timeout 120 \
+    --max-requests 4096 \
+    --max-requests-jitter 64 \
+    --access-logfile - \
+    --error-logfile -
+#
+#python -m gunicorn empty_interface:app \
+#  -k uvicorn.workers.UvicornWorker \
+#  --bind 0.0.0.0:8000 \
+#  --workers ${WORKERS:-1} \
+#  --threads 2 \
+#  --timeout 120 \
+#  --max-requests 4096 --max-requests-jitter 64

@@ -1,0 +1,31 @@
+"""POST /v1/images/generations"""
+from __future__ import annotations
+
+import logging
+
+from fastapi import APIRouter, Depends
+
+from app.core.auth import get_bearer_token
+from app.core.errors import UpstreamError
+from app.core.registry import ServiceType, get_registry
+from app.schemas.image import ImageRequest
+from app.vendors.base import ImageVendor
+
+logger = logging.getLogger(__name__)
+router = APIRouter()
+
+
+@router.post("/images/generations")
+async def image_generations(
+    request: ImageRequest,
+    api_key: str = Depends(get_bearer_token),
+):
+    registry = get_registry()
+    vendor = registry.lookup(ServiceType.IMAGE, request.model)
+    if not isinstance(vendor, ImageVendor):
+        raise UpstreamError(
+            f"Vendor for model '{request.model}' is not an ImageVendor",
+            code="invalid_vendor",
+        )
+
+    return await vendor.generate_image(request, api_key=api_key)
