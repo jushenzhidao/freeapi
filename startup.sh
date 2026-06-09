@@ -60,7 +60,7 @@ exec python -m gunicorn main:app \
 #
 #python -m gunicorn empty_interface:app \
 #  -k uvicorn.workers.UvicornWorker \
-#  --bind 0.0.0.0:8000 \
+#  --bind 0.0.0.0:8000 \uv
 #  --workers ${WORKERS:-1} \
 #  --threads 2 \
 #  --timeout 120 \
