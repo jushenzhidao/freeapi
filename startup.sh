@@ -41,7 +41,7 @@
 #esac
 
 #docker run --name empty_service -p 39008:8000 -d zhuluchangfen/chatfire
-
+uv pip list
 set -e
 
 WORKERS="${WORKERS:-2}"
