@@ -31,7 +31,7 @@ ENV PATH="/app/.venv/bin:${PATH}"
 # 复制项目源码（适配你的结构）
 COPY app/ ./app/
 COPY main.py startup.sh qwen_fastapi.py ./
-COPY tests/ ./tests/ 2>/dev/null || true
+COPY tests/ ./tests/
 
 # 创建非 root 用户
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
