@@ -23,7 +23,7 @@ WORKDIR /app
 # 先复制依赖声明（利用缓存层）
 COPY pyproject.toml uv.lock ./
 RUN uv venv /app/.venv && \
-    uv pip sync uv.lock && \
+    uuv sync && \
     rm -rf /root/.cache/uv
 
 ENV PATH="/app/.venv/bin:${PATH}"
