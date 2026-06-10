@@ -33,9 +33,9 @@ COPY app/ ./app/
 COPY main.py startup.sh  ./
 
 # 创建非 root 用户
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
-    chown -R appuser /app
-USER appuser
+#RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
+#    chown -R appuser /app
+#USER appuser
 
 HEALTHCHECK --start-period=30s --interval=30s --timeout=3s --retries=3 \
   CMD curl -f http://localhost:8000/health || exit 1
