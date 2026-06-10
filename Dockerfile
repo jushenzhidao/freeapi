@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
+ADD https://releases.astral.sh/installers/uv/latest/uv-installer.sh /uv-installer.sh
 RUN sh /uv-installer.sh && rm /uv-installer.sh
 ENV PATH="/root/.local/bin:${PATH}"
 
@@ -30,8 +30,7 @@ ENV PATH="/app/.venv/bin:${PATH}"
 
 # 复制项目源码（适配你的结构）
 COPY app/ ./app/
-COPY main.py startup.sh qwen_fastapi.py ./
-COPY tests/ ./tests/
+COPY main.py startup.sh  ./
 
 # 创建非 root 用户
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && \

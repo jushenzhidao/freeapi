@@ -47,7 +47,7 @@ set -e
 WORKERS="${WORKERS:-2}"
 PORT="${PORT:-8000}"
 
-exec python -m gunicorn main:app \
+uv run gunicorn main:app \
     -k uvicorn.workers.UvicornWorker \
     --bind "0.0.0.0:${PORT}" \
     --workers "${WORKERS}" \
@@ -57,11 +57,3 @@ exec python -m gunicorn main:app \
     --max-requests-jitter 64 \
     --access-logfile - \
     --error-logfile -
-#
-#python -m gunicorn empty_interface:app \
-#  -k uvicorn.workers.UvicornWorker \
-#  --bind 0.0.0.0:8000 \uv
-#  --workers ${WORKERS:-1} \
-#  --threads 2 \
-#  --timeout 120 \
-#  --max-requests 4096 --max-requests-jitter 64
