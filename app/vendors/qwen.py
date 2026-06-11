@@ -110,7 +110,7 @@ class QwenChatVendor(ChatVendor):
             "version": "2.1",
             "incremental_output": True,
             "chat_id": chat_id,
-            "chat_mode": "t2t",
+            "chat_mode": "normal",
             "model": model,
             "parent_id": None,
             "messages": [
@@ -129,6 +129,7 @@ class QwenChatVendor(ChatVendor):
                         "thinking_format": "summary",
                         "auto_search": True,
                     },
+                    "extra": {"meta": {"subChatType": "t2t"}}
                 }
                 for msg in messages
             ],

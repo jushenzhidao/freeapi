@@ -12,7 +12,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator, Optional, Any
 
 from app.schemas.chat import ChatRequest
 from app.schemas.image import ImageRequest
@@ -50,7 +50,7 @@ class ImageVendor(BaseVendor):
         self,
         request: ImageRequest,
         api_key: Optional[str] = None,
-    ) -> dict:
+    ) -> Any:
         """生成图片，返回 OpenAI ImagesResponse 格式。"""
 
 

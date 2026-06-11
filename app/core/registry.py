@@ -29,7 +29,7 @@ class ServiceType(str, Enum):
     VIDEO = "video"
     AUDIO = "audio"
     EMBEDDING = "embedding"
-
+    GEMINI_IMAGE= "gemini-image"
 
 @dataclass
 class VendorRoute:
@@ -125,7 +125,7 @@ def _build_registry() -> Registry:
     新增厂商在这里加一行 register。
     """
     from app.vendors.seedance import SeedanceVideoVendor
-    from app.vendors.qwen import QwenChatVendor
+    from app.vendors.seedream2gemini import Seedream2GeminiVendor
 
     reg = Registry()
 
@@ -135,11 +135,11 @@ def _build_registry() -> Registry:
         model_patterns=["doubao-seedance", "seedance"],
         vendor=SeedanceVideoVendor(),
     )
-    # ===== 对话生成 =====
+    # ===== 图片生成 =====
     reg.register(
-        ServiceType.CHAT,
-        model_patterns=["qwen", "qwen3", "qwen-plus", "qwen-turbo", "qwen-max"],
-        vendor=QwenChatVendor(),
+        ServiceType.GEMINI_IMAGE,
+        model_patterns=["doubao-seedream","seedream"],
+        vendor=Seedream2GeminiVendor(),
     )
 
     # 在这里继续注册新厂商：

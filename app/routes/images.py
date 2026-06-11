@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,Path
 
 from app.core.auth import get_bearer_token
 from app.core.errors import UpstreamError
@@ -21,7 +21,7 @@ async def image_generations(
     api_key: str = Depends(get_bearer_token),
 ):
     registry = get_registry()
-    vendor = registry.lookup(ServiceType.IMAGE, request.model)
+    vendor = registry.lookup(ServiceType.GEMINI_IMAGE, request.model)
     if not isinstance(vendor, ImageVendor):
         raise UpstreamError(
             f"Vendor for model '{request.model}' is not an ImageVendor",
@@ -29,3 +29,4 @@ async def image_generations(
         )
 
     return await vendor.generate_image(request, api_key=api_key)
+

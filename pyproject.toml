@@ -32,4 +32,11 @@ dependencies = [
     "typing-extensions==4.15.0",
     "typing-inspection==0.4.2",
     "uvicorn==0.49.0",
+    "charset-normalizer==3.4.7",
+    "loguru==0.7.3",
+    "packaging==26.2",
+    "requests==2.34.2",
+    "urllib3==2.7.0",
+    "websockets==16.0",
+    "win32-setctime==1.2.0",
 ]

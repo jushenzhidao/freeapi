@@ -42,10 +42,11 @@ def create_app() -> FastAPI:
     register_error_handlers(app)
 
     # 路由（在 create_app 内 import 避免循环引用）
-    from app.routes import chat, images, videos
+    from app.routes import chat, images, videos,gemini_images
 
     app.include_router(chat.router, prefix="/v1", tags=["chat"])
     app.include_router(images.router, prefix="/v1", tags=["images"])
+    app.include_router(gemini_images.router, prefix="/gemini", tags=["gemini_images"])
     app.include_router(videos.router, prefix="/v1", tags=["videos"])
 
     @app.get("/health", tags=["system"])
