@@ -7,12 +7,11 @@
 from __future__ import annotations
 
 import json
-import logging
 from typing import Any, AsyncGenerator, AsyncIterator, Iterable
 
 from sse_starlette.sse import EventSourceResponse
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 async def sse_event_stream(

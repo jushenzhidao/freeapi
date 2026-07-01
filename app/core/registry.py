@@ -13,14 +13,13 @@
 """
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
 from app.core.errors import ModelNotFoundError
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class ServiceType(str, Enum):

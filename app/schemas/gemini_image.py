@@ -5,13 +5,13 @@ from .common import APIModel
 # ==================== Gemini 请求体 ====================
 
 class Blob(BaseModel):
-    mimeType: str = Field(..., description="IANA 标准 MIME 类型")
-    data: str = Field(..., description="Base64 编码字符串")
+    mimeType: str = Field( description="IANA 标准 MIME 类型")
+    data: str = Field( description="Base64 编码字符串")
 
 
 class FileData(BaseModel):
     mimeType: Optional[str] = Field(None, description="可选 MIME 类型")
-    fileUri: str = Field(..., description="URI")
+    fileUri: str = Field( description="URI")
 
 
 class Part(BaseModel):
@@ -22,12 +22,12 @@ class Part(BaseModel):
 
 class Content(BaseModel):
     role: Literal["user", "model"] = Field("user", description="user 或 model")
-    parts: List[Part] = Field(..., description="内容片段数组")
+    parts: List[Part] = Field( description="内容片段数组")
 
 
 class SystemInstruction(BaseModel):
     role: Optional[Literal["system"]] = Field("system")
-    parts: List[Part] = Field(..., description="系统指令内容")
+    parts: List[Part] = Field( description="系统指令内容")
 
 
 class ImageConfig(BaseModel):
@@ -62,13 +62,13 @@ class GenerationConfig(BaseModel):
 
 
 class SafetySetting(BaseModel):
-    category: Literal[...] = Field(...)
-    threshold: Literal[...] = Field(...)
+    category: str = Field()
+    threshold: str = Field()
 
 
 class FunctionDeclaration(BaseModel):
-    name: str = Field(...)
-    description: str = Field(...)
+    name: str = Field()
+    description: str = Field()
     parameters: Optional[Dict[str, Any]] = Field(None)
     parametersJsonSchema: Optional[Dict[str, Any]] = Field(None)
     response: Optional[Dict[str, Any]] = Field(None)
@@ -99,7 +99,7 @@ class ToolConfig(BaseModel):
 
 
 class GenerateContentRequest(APIModel):
-    contents: List[Content] = Field(...)
+    contents: List[Content] = Field()
     systemInstruction: Optional[SystemInstruction] = Field(None)
     generationConfig: Optional[GenerationConfig] = Field(None)
     safetySettings: Optional[List[SafetySetting]] = Field(None)

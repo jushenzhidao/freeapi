@@ -24,7 +24,6 @@ base_url: https://ark.cn-beijing.volces.com/api/v3
 """
 from __future__ import annotations
 
-import logging
 import time
 from typing import Any, Optional
 
@@ -34,7 +33,7 @@ from app.core.http import request_json, upstream_client
 from app.schemas.video import VideoCreateRequest, VideoError, VideoResponse
 from app.vendors.base import VideoVendor
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 SEEDANCE_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
 

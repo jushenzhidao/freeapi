@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post("/v1beta/models/{model}:generateContent")
 async def gemini_image_generations(
         request: GenerateContentRequest,
-        model: Annotated[str, Path(..., description="模型名称")],
+        model: Annotated[str, Path( description="模型名称")],
         api_key: Annotated[str, Depends(get_bearer_token)],
 ):
     registry = get_registry()

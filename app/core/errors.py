@@ -3,16 +3,14 @@
 OpenAI 错误格式：
 {
     "error": {
-        "message": "...",
-        "type": "invalid_request_error" | "api_error" | "authentication_error" | ...,
+        "message": "",
+        "type": "invalid_request_error" | "api_error" | "authentication_error" | ,
         "param": null,
-        "code": "..."
+        "code": ""
     }
 }
 """
 from __future__ import annotations
-
-import logging
 from typing import Any, Optional
 
 from fastapi import Request, status
@@ -20,7 +18,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class APIError(Exception):
@@ -141,7 +139,7 @@ async def validation_exception_handler(
 async def unhandled_exception_handler(
     request: Request, exc: Exception
 ) -> JSONResponse:
-    logger.exception("Unhandled exception: %s", exc)
+    logger.exception(f"Unhandled exception: {exc}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content=to_openai_error(

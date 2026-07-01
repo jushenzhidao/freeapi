@@ -11,7 +11,7 @@ DELETE /v1/videos/{video_id}   取消任务（部分厂商支持）
 """
 from __future__ import annotations
 
-import logging
+
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Header
@@ -22,7 +22,7 @@ from app.core.registry import ServiceType, get_registry
 from app.schemas.video import VideoCreateRequest, VideoResponse
 from app.vendors.base import VideoVendor
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 router = APIRouter()
 
 
@@ -69,7 +69,7 @@ def _resolve_vendor_for_task(
     """根据 task_id 或客户端提供的模型名推断厂商。
 
     - model_hint：通过 `X-Vendor-Model` 头传入的模型名
-    - task_id 前缀：cgt- → seedance, ...
+    - task_id 前缀：cgt- → seedance,
     """
     registry = get_registry()
 

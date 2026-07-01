@@ -8,7 +8,7 @@ class VolcSequentialImageGenerationOptions(BaseModel):
 
 
 class VolcTool(BaseModel):
-    type: Literal["web_search"] = Field(...)
+    type: Literal["web_search"] = Field()
 
 
 class VolcOptimizePromptOptions(BaseModel):
@@ -16,8 +16,8 @@ class VolcOptimizePromptOptions(BaseModel):
 
 
 class VolcImagesGenerationsRequest(BaseModel):
-    model: str = Field(...)
-    prompt: str = Field(...)
+    model: str = Field()
+    prompt: str = Field()
     image: Optional[Union[str, List[str]]] = Field(None)
     size: Optional[str] = Field("2048x2048")
     sequential_image_generation: Optional[Literal["auto", "disabled"]] = Field("disabled")

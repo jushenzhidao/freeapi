@@ -27,7 +27,7 @@ GenerateContentResponse
 class Content(BaseModel):
     """生成的内容"""
     role: Optional[str] = Field(None, description="角色")
-    parts: List[Dict[str, Any]] = Field(..., description="内容片段数组")
+    parts: List[Dict[str, Any]] = Field( description="内容片段数组")
 
 
 class SafetyRating(BaseModel):
@@ -39,10 +39,10 @@ class SafetyRating(BaseModel):
         "HARM_CATEGORY_DANGEROUS", "HARM_CATEGORY_HARASSMENT",
         "HARM_CATEGORY_HATE_SPEECH", "HARM_CATEGORY_SEXUALLY_EXPLICIT",
         "HARM_CATEGORY_DANGEROUS_CONTENT", "HARM_CATEGORY_CIVIC_INTEGRITY"
-    ] = Field(..., description="安全类别")
+    ] = Field( description="安全类别")
     probability: Literal[
         "HARM_PROBABILITY_UNSPECIFIED", "NEGLIGIBLE", "LOW", "MEDIUM", "HIGH"
-    ] = Field(..., description="伤害概率")
+    ] = Field( description="伤害概率")
     blocked: Optional[bool] = Field(None, description="是否被阻止")
 
 

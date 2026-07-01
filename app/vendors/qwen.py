@@ -12,7 +12,6 @@
 from __future__ import annotations
 
 import json
-import logging
 import time
 import uuid
 from typing import AsyncIterator, Optional
@@ -25,7 +24,7 @@ from app.core.errors import UpstreamError
 from app.schemas.chat import ChatRequest
 from app.vendors.base import ChatVendor
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 # Qwen Web API 配置
 QWEN_BASE_URL = "https://chat.qwen.ai"

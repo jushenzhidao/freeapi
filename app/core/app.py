@@ -1,21 +1,17 @@
 """FastAPI app 工厂：CORS、错误处理、路由注册。"""
 from __future__ import annotations
-
-import logging
+from loguru import logger
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
-
+import sys
 
 def configure_logging(level: str) -> None:
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    logger.add(sys.stderr,level=level)
+
 
 
 def create_app() -> FastAPI:

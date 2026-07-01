@@ -39,7 +39,7 @@ def get_bearer_token(authorization: Optional[str] = Header(default=None)) -> str
     if settings.downstream_api_key and token != settings.downstream_api_key:
         # 不匹配下游 key，但仍允许透传上游 key（new-api 可能直接配置上游 key）
         # 这里采用宽松策略：只要 token 非空就放行
-        # 严格模式下可改为 raise AuthenticationError(...)
+        # 严格模式下可改为 raise AuthenticationError()
         pass
 
     return token

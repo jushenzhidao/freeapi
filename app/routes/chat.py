@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import inspect
-import logging
+
 
 from fastapi import APIRouter, Depends
 
@@ -12,8 +12,8 @@ from app.core.registry import ServiceType, get_registry
 from app.core.streaming import stream_response
 from app.schemas.chat import ChatRequest
 from app.vendors.base import ChatVendor
+from loguru import logger
 
-logger = logging.getLogger(__name__)
 router = APIRouter()
 
 

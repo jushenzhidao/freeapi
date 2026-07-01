@@ -1,7 +1,7 @@
 """POST /v1/images/generations"""
 from __future__ import annotations
 
-import logging
+
 
 from fastapi import APIRouter, Depends,Path
 
@@ -11,7 +11,7 @@ from app.core.registry import ServiceType, get_registry
 from app.schemas.image import ImageRequest
 from app.vendors.base import ImageVendor
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 router = APIRouter()
 
 

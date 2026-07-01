@@ -1,7 +1,6 @@
 """HTTP 客户端：统一的 httpx.AsyncClient 封装，自动处理上游错误。"""
 from __future__ import annotations
 
-import logging
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Optional
 
@@ -10,7 +9,7 @@ import httpx
 from app.core.config import get_settings
 from app.core.errors import UpstreamError
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 @asynccontextmanager
