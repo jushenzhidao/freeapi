@@ -29,7 +29,7 @@ from typing import Any, Optional
 
 from app.core.config import get_settings
 from app.core.errors import AuthenticationError, UpstreamError
-from app.core.http import request_json, upstream_client
+from app.core.my_http import request_json, upstream_client
 from app.schemas.video import VideoCreateRequest, VideoError, VideoResponse
 from app.vendors.base import VideoVendor
 

@@ -125,6 +125,7 @@ def _build_registry() -> Registry:
     """
     from app.vendors.seedance import SeedanceVideoVendor
     from app.vendors.seedream2gemini import Seedream2GeminiVendor
+    from app.vendors.gpt2image import GPTIMAGE
 
     reg = Registry()
 
@@ -139,6 +140,11 @@ def _build_registry() -> Registry:
         ServiceType.GEMINI_IMAGE,
         model_patterns=["doubao-seedream","seedream"],
         vendor=Seedream2GeminiVendor(),
+    )
+    reg.register(
+        ServiceType.IMAGE,
+        model_patterns=["gpt-image-2"],
+        vendor=GPTIMAGE(),
     )
 
     # 在这里继续注册新厂商：

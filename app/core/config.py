@@ -34,8 +34,19 @@ class Settings(BaseSettings):
     webhook_base_url: Optional[str] = None
 
     # 上游请求超时
-    upstream_timeout: float = 60.0
+    upstream_timeout: float = 3600.0
 
+    # MinIO 对象存储
+    minio_endpoint: Optional[str] = None
+    """MinIO 服务地址，例如 "play.min.io" 或 "127.0.0.1:9000"。"""
+    minio_access_key: Optional[str] = None
+    """MinIO Access Key（AK）。"""
+    minio_secret_key: Optional[str] = None
+    """MinIO Secret Key（SK）。"""
+    minio_bucket: Optional[str] = None
+    """默认使用的桶名。"""
+    minio_secure: bool = True
+    """是否使用 HTTPS（True 走 443，False 走 HTTP 9000）。"""
 
 @lru_cache
 def get_settings() -> Settings:

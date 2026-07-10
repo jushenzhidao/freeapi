@@ -9,8 +9,7 @@ from app.core.auth import get_bearer_token
 from app.core.errors import UpstreamError
 from app.core.registry import ServiceType, get_registry
 from app.schemas.image import ImageRequest
-from app.vendors.base import ImageVendor
-
+from app.vendors.gpt2image import GPTIMAGE
 from loguru import logger
 router = APIRouter()
 
@@ -21,8 +20,8 @@ async def image_generations(
     api_key: str = Depends(get_bearer_token),
 ):
     registry = get_registry()
-    vendor = registry.lookup(ServiceType.GEMINI_IMAGE, request.model)
-    if not isinstance(vendor, ImageVendor):
+    vendor = registry.lookup(ServiceType.IMAGE, request.model)
+    if not isinstance(vendor, GPTIMAGE):
         raise UpstreamError(
             f"Vendor for model '{request.model}' is not an ImageVendor",
             code="invalid_vendor",
