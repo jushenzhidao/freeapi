@@ -10,8 +10,6 @@
 - Authorization header 传递 email（作为 api_key 参数传入）
 - 密码由服务端固定配置，不对外暴露
 """
-from Scripts.activate_this import base
-
 from app.schemas.gemini_image import *
 from app.schemas.gemini_image_response import *
 from app.schemas.seedream_response import *
