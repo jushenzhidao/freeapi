@@ -68,7 +68,7 @@ class Registry:
         route = VendorRoute(service=service, model_patterns=model_patterns, vendor=vendor)
         self._routes.append(route)
         logger.info(
-            "Registered vendor: service=%s patterns=%s vendor=%s",
+            "Registered vendor: service={} patterns={} vendor={}",
             service.value,
             model_patterns,
             type(vendor).__name__,
@@ -125,7 +125,7 @@ def _build_registry() -> Registry:
     """
     from app.vendors.seedance import SeedanceVideoVendor
     from app.vendors.seedream2gemini import Seedream2GeminiVendor
-    from app.vendors.gpt2image import GPTIMAGE
+    from app.vendors.gpt2image import GptImageVendor
 
     reg = Registry()
 
@@ -144,7 +144,7 @@ def _build_registry() -> Registry:
     reg.register(
         ServiceType.IMAGE,
         model_patterns=["gpt-image-2"],
-        vendor=GPTIMAGE(),
+        vendor=GptImageVendor(),
     )
 
     # 在这里继续注册新厂商：

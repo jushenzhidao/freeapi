@@ -44,6 +44,8 @@
 uv pip list
 set -e
 
+ulimit -n 65536
+
 WORKERS="${WORKERS:-2}"
 PORT="${PORT:-8000}"
 

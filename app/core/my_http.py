@@ -10,6 +10,40 @@ from app.core.config import get_settings
 from app.core.errors import UpstreamError
 
 from loguru import logger
+from httpx_retries import Retry, RetryTransport  # 新增
+
+_RETRY = Retry(
+    total=3,
+    backoff_factor=1.0,  # 退避 ≈ 1s, 2s, 4s...
+    backoff_jitter=1.0,  # 随机抖动，防并发重试撞限流的惊群
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["POST"],  # 图生成是 POST，必须显式加
+    respect_retry_after_header=True,  # 429 的 Retry-After 优先
+)
+
+
+# ============ 关键修复：进程级共享一个 httpx 客户端，消除每请求新建连接导致的 FD 耗尽 ============
+_shared_client: Optional[httpx.AsyncClient] = None
+
+def get_http_client() -> httpx.AsyncClient:
+    global _shared_client
+    if _shared_client is None or _shared_client.is_closed:
+        _shared_client = httpx.AsyncClient(
+            transport=RetryTransport(retry=_RETRY),
+            timeout=httpx.Timeout(1200), # todo 改为环境变量
+            limits=httpx.Limits(
+                max_connections=100,   # 全项目共用一个池，按总并发调
+                max_keepalive_connections=50,
+                keepalive_expiry=30,
+            ),
+        )
+    return _shared_client
+
+async def close_http_client() -> None:
+    global _shared_client
+    if _shared_client is not None and not _shared_client.is_closed:
+        await _shared_client.aclose()
+        _shared_client = None
 
 
 @asynccontextmanager
@@ -20,6 +54,7 @@ async def upstream_client(
     extra_headers: Optional[dict[str, str]] = None,
 ) -> AsyncIterator[httpx.AsyncClient]:
     """创建上游 HTTP 客户端的上下文管理器。"""
+    # todo 示例seedance中用到，后续重构建议消除
     settings = get_settings()
     headers: dict[str, str] = {"Content-Type": "application/json"}
     if api_key:

@@ -91,6 +91,11 @@ def to_openai_error(
 
 
 async def api_error_handler(request: Request, exc: APIError) -> JSONResponse:
+    logger.error(
+        "APIError -> {} {} : [{}] {} (type={}, code={})",
+        request.method, request.url.path, exc.status_code, exc.message,
+        exc.error_type, exc.code,
+    )
     return JSONResponse(
         status_code=exc.status_code,
         content=to_openai_error(
