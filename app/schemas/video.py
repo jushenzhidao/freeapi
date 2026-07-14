@@ -67,11 +67,41 @@ class VideoCreateRequest(APIModel):
     resolution: Optional[str] = None
     """分辨率，如 "720p", "1080p"。"""
 
+class reference_image:
+    url: str
+
+class GrokVideoCreateRequest(APIModel):
+    """创建视频任务的请求体（OpenAI Sora 兼容）。"""
+
+    model: str
+    """模型名，例如 doubao-seedance-1-0-pro-250528、sora-2-t2v"""
+
+    prompt: str
+    """文本提示词。"""
+
+    duration: Optional[str] = None
+    """视频时长（秒），如 "5", "10"。"""
+
+
+    aspect_ratio: Optional[str] = None
+    """画面比例，如 "16:9", "9:16"。"""
+
+    resolution: Optional[str] = None
+    """分辨率，如 "720p", "1080p"。"""
+
+    reference_images: Optional[list[reference_image]] = None
+
+    image: Optional[reference_image] = None
+
+
 
 class VideoError(APIModel):
     code: str
     message: str
 
+class GrokVideoResponse(APIModel):
+    """grok视频任务的响应体"""
+    request_id:str
 
 class VideoResponse(APIModel):
     """视频任务的响应体（OpenAI Sora 兼容）。"""

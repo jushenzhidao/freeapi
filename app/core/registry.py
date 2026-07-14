@@ -123,17 +123,22 @@ def _build_registry() -> Registry:
 
     新增厂商在这里加一行 register。
     """
-    from app.vendors.seedance import SeedanceVideoVendor
+    # from app.vendors.seedance import SeedanceVideoVendor
     from app.vendors.seedream2gemini import Seedream2GeminiVendor
     from app.vendors.gpt2image import GptImageVendor
-
+    from app.vendors.grok_video import GorkVideoVendor
     reg = Registry()
 
     # ===== 视频生成 =====
+    # reg.register(
+    #     ServiceType.VIDEO,
+    #     model_patterns=["doubao-seedance", "seedance"],
+    #     vendor=SeedanceVideoVendor(),
+    # )
     reg.register(
         ServiceType.VIDEO,
-        model_patterns=["doubao-seedance", "seedance"],
-        vendor=SeedanceVideoVendor(),
+        model_patterns=["grok-imagine-video"],
+        vendor=GorkVideoVendor(),
     )
     # ===== 图片生成 =====
     reg.register(

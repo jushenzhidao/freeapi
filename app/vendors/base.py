@@ -50,6 +50,7 @@ class ImageVendor(BaseVendor):
         self,
         request: ImageRequest,
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
     ) -> Any:
         """生成图片，返回 OpenAI ImagesResponse 格式。"""
 
@@ -62,6 +63,7 @@ class VideoVendor(BaseVendor):
         self,
         request: VideoCreateRequest,
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
     ) -> VideoResponse:
         """创建视频任务，立即返回 task_id。"""
 
@@ -70,6 +72,7 @@ class VideoVendor(BaseVendor):
         self,
         video_id: str,
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
     ) -> VideoResponse:
         """查询视频任务状态。"""
 

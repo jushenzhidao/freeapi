@@ -42,18 +42,19 @@ class GptImageVendor(ImageVendor):
     """香港节点"""
 
     name = "gpttap"
-    base_url = "http://st1.gpttap.top"
+    # base_url = "http://st1.gpttap.top"
 
-    async def generate_image(self, request: ImageRequest, api_key: Optional[str] = None):
+    async def generate_image(self, request: ImageRequest, api_key: Optional[str] = None,base_url: Optional[str] = None):
         if request.image:
-            return await self.image_edit(api_key, request)
+            return await self.image_edit(api_key, request,base_url)
         else:
-            return await self.image(api_key, request)
+            return await self.image(api_key, request,base_url)
 
     async def image(
             self,
             key: str,
             request: ImageRequest,
+            base_url:str,
             timeout: float = 300.0,  # 单次上游请求超时（秒），避免无限等待
     ):
         """文生图"""
@@ -67,9 +68,9 @@ class GptImageVendor(ImageVendor):
                 request.response_format = None
             payload = request.model_dump()
             logger.debug(f"请求体：{payload}")
-            logger.info("→ 向上游 POST {}/v1/images/generations", self.base_url)
+            logger.info("→ 向上游 POST {}/v1/images/generations", base_url)
             res = await client.post(
-                f"{self.base_url}/v1/images/generations",
+                f"{base_url}/v1/images/generations",
                 headers=headers,
                 json=payload,
                 timeout=timeout,
@@ -101,6 +102,7 @@ class GptImageVendor(ImageVendor):
             self,
             key: str,
             request: ImageRequest,
+            base_url:str,
             timeout: float = 300.0,  # 单次上游请求超时（秒），避免无限等待
     ):
         headers = {"Authorization": f"Bearer {key}"}
@@ -122,9 +124,9 @@ class GptImageVendor(ImageVendor):
                 files = [('image', ('file',await get_content(i) if 'http' in i else i , 'application/octet-stream')) for i in image]
 
             payload = request.model_dump(exclude='image')
-            logger.info("→ 向上游 POST {}/v1/images/edits", self.base_url)
+            logger.info("→ 向上游 POST {}/v1/images/edits", base_url)
             res = await client.post(
-                f"{self.base_url}/v1/images/edits",
+                f"{base_url}/v1/images/edits",
                 headers=headers,
                 data=payload,
                 files=files,

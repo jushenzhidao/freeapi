@@ -19,18 +19,19 @@ from fastapi import APIRouter, Depends, Header
 from app.core.auth import get_bearer_token
 from app.core.errors import InvalidRequestError, UpstreamError
 from app.core.registry import ServiceType, get_registry
-from app.schemas.video import VideoCreateRequest, VideoResponse
+from app.schemas.video import VideoCreateRequest, VideoResponse,GrokVideoCreateRequest
 from app.vendors.base import VideoVendor
 
 from loguru import logger
 router = APIRouter()
 
-
-@router.post("/videos", response_model=VideoResponse)
+# todo 重写视频
+@router.post("/videos")
 async def create_video(
-    request: VideoCreateRequest,
+    request: GrokVideoCreateRequest,
     api_key: str = Depends(get_bearer_token),
-) -> VideoResponse:
+    vendor_url: str = Header(None, alias="X-Request-Vendor"),
+):
     registry = get_registry()
     vendor = registry.lookup(ServiceType.VIDEO, request.model)
     if not isinstance(vendor, VideoVendor):
@@ -39,27 +40,28 @@ async def create_video(
             code="invalid_vendor",
         )
 
-    return await vendor.create_video(request, api_key=api_key)
+    return await vendor.create_video(request, api_key=api_key,base_url=vendor_url)
 
 
-@router.get("/videos/{video_id}", response_model=VideoResponse)
+@router.get("/videos/{video_id}")
 async def get_video(
     video_id: str,
     x_vendor_model: Optional[str] = Header(default=None),
     api_key: str = Depends(get_bearer_token),
-) -> VideoResponse:
+    vendor_url: str = Header(None, alias="X-Request-Vendor"),
+):
     vendor = _resolve_vendor_for_task(video_id, x_vendor_model)
-    return await vendor.get_video(video_id, api_key=api_key)
+    return await vendor.get_video(video_id, api_key=api_key,base_url=vendor_url)
 
 
-@router.delete("/videos/{video_id}", response_model=VideoResponse)
-async def cancel_video(
-    video_id: str,
-    x_vendor_model: Optional[str] = Header(default=None),
-    api_key: str = Depends(get_bearer_token),
-) -> VideoResponse:
-    vendor = _resolve_vendor_for_task(video_id, x_vendor_model)
-    return await vendor.cancel_video(video_id, api_key=api_key)
+# @router.delete("/videos/{video_id}", response_model=VideoResponse)
+# async def cancel_video(
+#     video_id: str,
+#     x_vendor_model: Optional[str] = Header(default=None),
+#     api_key: str = Depends(get_bearer_token),
+# ) -> VideoResponse:
+#     vendor = _resolve_vendor_for_task(video_id, x_vendor_model)
+#     return await vendor.cancel_video(video_id, api_key=api_key)
 
 
 def _resolve_vendor_for_task(

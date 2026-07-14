@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 
-from fastapi import APIRouter, Depends,Path
+from fastapi import APIRouter, Depends,Path,Header
 
 from app.core.auth import get_bearer_token
 from app.core.errors import UpstreamError
@@ -18,6 +18,7 @@ router = APIRouter()
 async def image_generations(
     request: ImageRequest,
     api_key: str = Depends(get_bearer_token),
+    vendor_url: str = Header(None, alias="X-Request-Vendor"),
 ):
     registry = get_registry()
     vendor = registry.lookup(ServiceType.IMAGE, request.model)
@@ -27,5 +28,5 @@ async def image_generations(
             code="invalid_vendor",
         )
 
-    return await vendor.generate_image(request, api_key=api_key)
+    return await vendor.generate_image(request, api_key=api_key,base_url=vendor_url)
 
