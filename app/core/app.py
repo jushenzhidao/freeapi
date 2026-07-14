@@ -71,6 +71,7 @@ def create_app() -> FastAPI:
     app.include_router(images.router, prefix="/v1", tags=["images"])
     app.include_router(gemini_images.router, prefix="/gemini", tags=["gemini_images"])
     app.include_router(videos.router, prefix="/v1", tags=["videos"])
+    app.include_router(videos.router, prefix="/dev/v1", tags=["videos"])
 
     @app.get("/health", tags=["system"])
     async def health() -> dict[str, str]:
