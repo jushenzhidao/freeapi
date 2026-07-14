@@ -51,7 +51,7 @@ async def get_video(
     vendor_url: str = Header(None, alias="X-Request-Vendor"),
 ):
     vendor = _resolve_vendor_for_task(video_id, x_vendor_model)
-    return await vendor.get_video(video_id, api_key=api_key,base_url=vendor_url)
+    return await vendor.get_video(video_id=video_id, api_key=api_key,base_url=vendor_url)
 
 
 # @router.delete("/videos/{video_id}", response_model=VideoResponse)

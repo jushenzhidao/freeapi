@@ -67,7 +67,7 @@ class VideoCreateRequest(APIModel):
     resolution: Optional[str] = None
     """分辨率，如 "720p", "1080p"。"""
 
-class reference_image:
+class reference_image(APIModel):
     url: str
 
 class GrokVideoCreateRequest(APIModel):
@@ -79,7 +79,7 @@ class GrokVideoCreateRequest(APIModel):
     prompt: str
     """文本提示词。"""
 
-    duration: Optional[str] = None
+    duration: Optional[int] = None
     """视频时长（秒），如 "5", "10"。"""
 
 

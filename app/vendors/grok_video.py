@@ -54,7 +54,7 @@ class GorkVideoVendor(VideoVendor):
             res = await client.post(
                 f"{base_url}/v1/videos/generations",
                 headers=headers,
-                json=request.model_dump(),
+                json=request.model_dump(exclude_none=True),
                 # timeout=timeout,
             )
             logger.info("← 上游返回 HTTP {}", res.status_code)
@@ -71,6 +71,7 @@ class GorkVideoVendor(VideoVendor):
             # logger.info("GptImageVendor.image 完成")
             return res.json()
         except asyncio.TimeoutError:
+            timeout = 'xxx'
             raise UpstreamError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
         except httpx.HTTPStatusError as e:  # 上游返回 4xx/5xx (重试已耗尽)
             r = e.response
@@ -81,9 +82,7 @@ class GorkVideoVendor(VideoVendor):
             raise UpstreamError(status_code=502, message=f"上游不可达: {e}") from e
 
 
-    async def get_video(
-            video_id, api_key, base_url
-    ):
+    async def get_video(self, video_id, api_key, base_url):
         """文生图"""
 
         headers = {"Authorization": f"Bearer {api_key}"}
@@ -112,6 +111,7 @@ class GorkVideoVendor(VideoVendor):
             # logger.info("GptImageVendor.image 完成")
             return res.json()
         except asyncio.TimeoutError:
+            timeout = 'xxx'
             raise UpstreamError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
         except httpx.HTTPStatusError as e:  # 上游返回 4xx/5xx (重试已耗尽)
             r = e.response
