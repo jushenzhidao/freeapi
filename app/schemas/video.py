@@ -74,7 +74,7 @@ class GrokVideoCreateRequest(APIModel):
     """创建视频任务的请求体（OpenAI Sora 兼容）。"""
 
     model: str
-    """模型名，例如 doubao-seedance-1-0-pro-250528、sora-2-t2v"""
+    """模型名，"""
 
     prompt: str
     """文本提示词。"""

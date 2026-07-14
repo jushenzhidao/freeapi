@@ -48,6 +48,7 @@ class GorkVideoVendor(VideoVendor):
         headers = {"Authorization": f"Bearer {api_key}"}
         # logger.info("GptImageVendor.image 开始文生图 model={} prompt={!r}", request.model, (request.prompt or "")[:60])
         client = get_http_client()
+        base_url = 'https://api.wxiai.com/xai'
         try:
 
             logger.info("→ 向上游 POST {}/v1/videos/generations", base_url)
@@ -88,6 +89,7 @@ class GorkVideoVendor(VideoVendor):
         headers = {"Authorization": f"Bearer {api_key}"}
         # logger.info("GptImageVendor.image 开始文生图 model={} prompt={!r}", request.model, (request.prompt or "")[:60])
         client = get_http_client()
+        base_url = 'https://api.wxiai.com/xai'
         try:
 
             logger.info("→ 向上游 POST {}/v1/videos/video_id", base_url)
