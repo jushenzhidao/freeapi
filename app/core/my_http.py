@@ -13,10 +13,10 @@ from loguru import logger
 from httpx_retries import Retry, RetryTransport  # 新增
 
 _RETRY = Retry(
-    total=3,
+    total=0, # todo 建议加环境变量
     backoff_factor=1.0,  # 退避 ≈ 1s, 2s, 4s...
     backoff_jitter=1.0,  # 随机抖动，防并发重试撞限流的惊群
-    status_forcelist=[429, 500, 502, 503, 504],
+    status_forcelist=[429, 500, 502, 503, 504], # 	遇到这些 HTTP 状态码才触发重试
     allowed_methods=["POST"],  # 图生成是 POST，必须显式加
     respect_retry_after_header=True,  # 429 的 Retry-After 优先
 )

@@ -28,7 +28,7 @@ async def get_content(url, timeout=120):
         logger.error(e)
         raise UpstreamError(status_code=e.response.status_code, message=f'{url}下载失败: {e}') from e
     except httpx.HTTPError as e:  # 连接/超时 (重试耗尽) -> 网关错误
-        raise UpstreamError(status_code=502, message=f"无法下载: {e}") from e
+        raise UpstreamError(status_code=502, message=f"{url}无法下载: {e}") from e
 
 
 async def get_url(data):
