@@ -18,7 +18,7 @@ router = APIRouter()
 async def image_generations(
     request: ImageRequest,
     api_key: str = Depends(get_bearer_token),
-    vendor_url: str = Header(None, alias="X-Request-Vendor"),
+    vendor_url: str = Header(None, alias="X-Vendor-URL"),
 ):
     registry = get_registry()
     vendor = registry.lookup(ServiceType.IMAGE, request.model)

@@ -13,7 +13,7 @@ from typing import Optional
 from app.core.storage import get_minio_client, upload_image
 from openai.types import ImagesResponse, Image
 import io
-from app.core.errors import UpstreamError
+from app.core.errors import APIError
 from app.core.my_http import get_http_client
 
 
@@ -26,10 +26,16 @@ async def get_content(url, timeout=120):
         return response.content
     except httpx.HTTPStatusError as e:
         logger.error(e)
-        raise UpstreamError(status_code=e.response.status_code, message=f'{url}下载失败: {e}') from e
+        raise APIError(status_code=e.response.status_code, message=f'{url}下载失败: {e}') from e
     except httpx.HTTPError as e:  # 连接/超时 (重试耗尽) -> 网关错误
-        raise UpstreamError(status_code=502, message=f"{url}无法下载: {e}") from e
-
+        raise APIError(status_code=502, message=f"{url}无法下载: {e}") from e
+async def base2byte(base64_str: str) -> bytes:
+    """base64转bytes"""
+    s = base64_str.strip()
+    # 去除 data URI 文件头（如 data:image/png;base64,）
+    if s.startswith("data:") and "," in s:
+        s = s.split(",", 1)[1]
+    return base64.b64decode(s)
 
 async def get_url(data):
     """上传服务"""
@@ -89,14 +95,14 @@ class GptImageVendor(ImageVendor):
             logger.info("GptImageVendor.image 完成")
             return images_response
         except asyncio.TimeoutError:
-            raise UpstreamError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
+            raise APIError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
         except httpx.HTTPStatusError as e:  # 上游返回 4xx/5xx (重试已耗尽)
             r = e.response
             logger.error("上游返回错误 HTTP {}: {}", r.status_code, r.text[:300])
-            raise UpstreamError(status_code=r.status_code, message=r.text) from e
+            raise APIError(status_code=r.status_code, message=r.text) from e
         except httpx.HTTPError as e:  # 连接/超时 (重试耗尽) -> 网关错误
             logger.error("上游连接失败: {}", e)
-            raise UpstreamError(status_code=502, message=f"上游不可达: {e}") from e
+            raise APIError(status_code=502, message=f"上游不可达: {e}") from e
 
     async def image_edit(
             self,
@@ -118,10 +124,10 @@ class GptImageVendor(ImageVendor):
             logger.debug(f"请求体：{request.model_dump(exclude="image")}")
             if isinstance(image, str):
                 # 单图
-                files = [('image', ('file',await get_content(image)  if 'http'  in image else image, 'application/octet-stream'))]
+                files = [('image', ('file',await get_content(image)  if 'http'  in image else await base2byte(image) , 'application/octet-stream'))]
 
             else:
-                files = [('image', ('file',await get_content(i) if 'http' in i else i , 'application/octet-stream')) for i in image]
+                files = [('image', ('file',await get_content(i) if 'http' in i else await base2byte(i) , 'application/octet-stream')) for i in image]
 
             payload = request.model_dump(exclude='image')
             logger.info("→ 向上游 POST {}/v1/images/edits", base_url)
@@ -146,11 +152,11 @@ class GptImageVendor(ImageVendor):
             logger.info("GptImageVendor.image_edit 完成")
             return images_response
         except asyncio.TimeoutError:
-            raise UpstreamError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
+            raise APIError(status_code=504, message=f"上游/MinIO 超时（>{timeout}s），请检查网络或上游状态") from None
         except httpx.HTTPStatusError as e:  # 上游返回 4xx/5xx (重试已耗尽)
             r = e.response
             logger.error("上游返回错误 HTTP {}: {}", r.status_code, r.text[:300])
-            raise UpstreamError(status_code=r.status_code, message=r.text) from e
+            raise APIError(status_code=r.status_code, message=r.text) from e
         except httpx.HTTPError as e:  # 连接/超时 (重试耗尽) -> 网关错误
             logger.error("上游连接失败: {}", e)
-            raise UpstreamError(status_code=502, message=f"上游不可达: {e}") from e
+            raise APIError(status_code=502, message=f"上游不可达: {e}") from e
