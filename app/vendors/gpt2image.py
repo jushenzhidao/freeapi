@@ -69,10 +69,8 @@ class GptImageVendor(ImageVendor):
         logger.info("GptImageVendor.image 开始文生图 model={} prompt={!r}", request.model, (request.prompt or "")[:60])
         client = get_http_client()
         try:
-            response_format = request.response_format
-            if 'url' in response_format:
-                request.response_format = None
-
+            response_format = str(request.response_format)
+            request.response_format = None
             payload = request.model_dump()
             logger.debug(f"请求体：{payload}")
             logger.info("→ 向上游 POST {}/v1/images/generations", base_url)
@@ -117,9 +115,8 @@ class GptImageVendor(ImageVendor):
         logger.info("GptImageVendor.image_edit 开始图生图 model={} 参考图数量={}", request.model, len(request.image or []))
         client = get_http_client()
         try:
-            response_format = request.response_format
-            if response_format == 'url':
-                request.response_format = None
+            response_format = str(request.response_format)
+            request.response_format = None
             image = request.image
             # if 'http' not in str(image):
             #     raise UpstreamError(status_code='400', message="参考图只支持url") from e
