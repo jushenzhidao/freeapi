@@ -7,10 +7,14 @@ from minio import Minio
 from app.core.config import get_settings
 
 @lru_cache
-def get_minio_client() -> Minio:
+def get_minio_client(net = None) -> Minio:
     s = get_settings()
+    if net=='cn':
+        minio_endpoint = s.minio_endpoint_cn
+    else:
+        minio_endpoint = s.minio_endpoint
     return Minio(
-        s.minio_endpoint,
+        minio_endpoint,
         access_key=s.minio_access_key,
         secret_key=s.minio_secret_key,
         secure=s.minio_secure,

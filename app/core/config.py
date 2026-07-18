@@ -38,6 +38,7 @@ class Settings(BaseSettings):
 
     # MinIO 对象存储
     minio_endpoint: Optional[str] = None
+    minio_endpoint_cn: Optional[str] = None
     """MinIO 服务地址，例如 "play.min.io" 或 "127.0.0.1:9000"。"""
     minio_access_key: Optional[str] = None
     """MinIO Access Key（AK）。"""

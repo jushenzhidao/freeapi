@@ -74,3 +74,6 @@ DOWNSTREAM_API_KEY=sk-xxx
 # 各厂商上游 Key（也可以在 new-api 中配置后通过 Authorization 头传入）
 SEEDANCE_API_KEY=ark-xxx
 ```
+# 更新日志
+1. gpt-image-2 端口
+- 文生/图生 统一到 文生端口上，并且添加对象存储，支持返回url

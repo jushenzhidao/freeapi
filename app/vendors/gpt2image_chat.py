@@ -1,17 +1,16 @@
 """
-图片生成厂商 - 文生图/图生图统一接口。
+todo 图片生成厂商 - 文生图/图生图的chat接口。
 """
 import asyncio
-from app.schemas.image import *
-from app.vendors.base import ImageVendor
+from app.vendors.base import ChatVendor
 from loguru import logger
-import uuid
+
 import base64
 import httpx
 from typing import Optional
 
 from app.core.storage import get_minio_client, upload_image
-from openai.types import ImagesResponse, Image
+from openai.types import ResponseFormatText, Image
 import io
 from app.core.errors import APIError
 from app.core.my_http import get_http_client
@@ -44,7 +43,7 @@ async def get_url(data,net=None):
     return await asyncio.to_thread(upload_image, client, data)
 
 
-class GptImageVendor(ImageVendor):
+class GptImageVendor(ChatVendor):
     """香港节点"""
 
     name = "gpttap"
