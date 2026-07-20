@@ -20,7 +20,7 @@ def get_minio_client(net = None) -> Minio:
         secure=s.minio_secure,
     )
 
-def upload_image(client: Minio, data, file_type='png',content_type: str='image/png') -> str:
+def upload_image(client: Minio, data, file_type='jpg',content_type: str='image/jpg') -> str:
 
     object_name = f"{time.strftime('%Y%m%d')}/{uuid.uuid4().hex}.{file_type}"
     # 先 seek(0,2) 拿到流的大小，再 seek(0) 把游标移回开头

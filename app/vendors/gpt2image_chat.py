@@ -4,13 +4,18 @@ todo 图片生成厂商 - 文生图/图生图的chat接口。
 import asyncio
 from app.vendors.base import ChatVendor
 from loguru import logger
-
+from sse_starlette import EventSourceResponse
 import base64
 import httpx
 from typing import Optional
 
 from app.core.storage import get_minio_client, upload_image
 from openai.types import ResponseFormatText, Image
+from app.schemas.chat import ChatRequest #todo 使用openai的
+from app.schemas.image import ImageRequest
+
+from openai.types import ImagesResponse
+from openai.types.chat import completion_create_params
 import io
 from app.core.errors import APIError
 from app.core.my_http import get_http_client
@@ -43,13 +48,13 @@ async def get_url(data,net=None):
     return await asyncio.to_thread(upload_image, client, data)
 
 
-class GptImageVendor(ChatVendor):
+class GptImage2Chat(ChatVendor):
     """香港节点"""
 
     name = "gpttap"
     # base_url = "http://st1.gpttap.top"
 
-    async def generate_image(self, request: ImageRequest, api_key: Optional[str] = None,base_url: Optional[str] = None):
+    async def generate_image(self, request: ChatRequest, api_key: Optional[str] = None,base_url: Optional[str] = None):
         if request.image:
             return await self.image_edit(api_key, request,base_url)
         else:
