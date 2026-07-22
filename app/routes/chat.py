@@ -4,7 +4,7 @@ from __future__ import annotations
 import inspect
 
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 
 from app.core.auth import get_bearer_token
 from app.core.errors import UpstreamError
@@ -21,6 +21,7 @@ router = APIRouter()
 async def chat_completions(
     request: ChatRequest,
     api_key: str = Depends(get_bearer_token),
+    vendor_url: str = Header(None, alias="X-Vendor-URL"),
 ):
     registry = get_registry()
     vendor = registry.lookup(ServiceType.CHAT, request.model)
@@ -30,7 +31,7 @@ async def chat_completions(
             code="invalid_vendor",
         )
 
-    response = await vendor.chat(request, api_key=api_key)
+    response = await vendor.chat(request, api_key=api_key,base_url=vendor_url)
 
     # 流式：返回 AsyncIterator
     if request.stream and (inspect.isasyncgen(response) or hasattr(response, "__aiter__")):

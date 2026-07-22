@@ -1,16 +1,25 @@
 """Chat completions schema (OpenAI 兼容)。"""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, Literal, Union, List,Annotated
 
 from pydantic import Field
 
 from app.schemas.common import APIModel
 
+class ChatURL(APIModel):
+    url: str
 
+class ImagePart(APIModel):
+    type: str = 'image_url'
+    image_url: Union[ChatURL,str,None] = None
+class TextPart(APIModel):
+    type: str = 'text'
+    text : str
+# ContentPart = Annotated[Union[TextPart, ImagePart], Field(discriminator="type")]
 class ChatMessage(APIModel):
-    role: str
-    content: Any
+    role: Literal['user','system'] = 'user'
+    content: Union[list[Union[ImagePart,TextPart]], str]
     name: Optional[str] = None
     tool_calls: Optional[list[Any]] = None
     tool_call_id: Optional[str] = None

@@ -2,20 +2,29 @@
 todo 图片生成厂商 - 文生图/图生图的chat接口。
 """
 import asyncio
+from idlelib.rpc import response_queue
+
+from click import prompt
+from openai.types.chat.chat_completion import Choice
+from openai.types.responses import response
+
 from app.vendors.base import ChatVendor
 from loguru import logger
 from sse_starlette import EventSourceResponse
 import base64
 import httpx
 from typing import Optional
+from openai.types.chat import ChatCompletion, ChatCompletionMessage,ChatCompletionChunk
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
 
 from app.core.storage import get_minio_client, upload_image
-from openai.types import ResponseFormatText, Image
+from openai.types import  Image
 from app.schemas.chat import ChatRequest #todo 使用openai的
 from app.schemas.image import ImageRequest
+import secrets
 
-from openai.types import ImagesResponse
-from openai.types.chat import completion_create_params
+from openai.types import ImagesResponse,CompletionUsage
 import io
 from app.core.errors import APIError
 from app.core.my_http import get_http_client
@@ -54,12 +63,60 @@ class GptImage2Chat(ChatVendor):
     name = "gpttap"
     # base_url = "http://st1.gpttap.top"
 
-    async def generate_image(self, request: ChatRequest, api_key: Optional[str] = None,base_url: Optional[str] = None):
-        if request.image:
-            return await self.image_edit(api_key, request,base_url)
-        else:
-            return await self.image(api_key, request,base_url)
+    async def chat(self, request: ChatRequest, api_key: Optional[str] = None,base_url: Optional[str] = None):
+        # 入参转换
+        model = request.model
+        messages = request.messages
+        if len(messages) != 1:
+            raise APIError(code=400,message=f'messages长度{len(messages)}不为1!')
+        message = messages[0]
+        if message.role != 'user':
+            raise APIError(code=400, message=f'messages[0].role{len(messages)}不为user!')
+        images = []
+        if isinstance(message.content, str):
 
+            prompt = message.content
+        else:
+            prompt = [i.text for i in message.content if i.type == "text"][0]
+            images = [i.image_url.url for i in message.content if i.type == "image_url"]
+        # 调用
+        if images:
+            image_request = ImageRequest(model=model,prompt=prompt,response_format='url',size='auto',image=images)
+            response = await self.image_edit(api_key, image_request,base_url)
+        else:
+            image_request = ImageRequest(model=model, prompt=prompt, response_format='url', size='auto')
+            response = await self.image(api_key, image_request,base_url)
+        # 出参转换
+        content = ''.join([f"[None]({url.url})\n\n" for url in response.data])
+        usage = response.usage
+        idx = "chatcmpl-" + secrets.token_urlsafe(16)
+
+        if request.stream:
+            ccc =ChatCompletionChunk(
+                model=model, created=response.created,
+                usage=CompletionUsage(prompt_tokens=usage.input_tokens, completion_tokens=usage.output_tokens,
+                                      total_tokens=usage.total_tokens),
+                id=idx,
+                object='chat.completion.chunk',
+                choices=[
+                    ChunkChoice(index=0, delta=ChoiceDelta(role='assistant', content=content), finish_reason='stop')])
+            async def gen():
+                for i in range(1):
+                    yield {"data": ccc.model_dump_json()}
+                    yield {"data": "[DONE]"}
+            return EventSourceResponse(gen())
+        else:
+            cc = ChatCompletion(model=model, created=response.created,
+                           usage=CompletionUsage(prompt_tokens=usage.input_tokens,
+                                                 completion_tokens=usage.output_tokens,
+                                                 total_tokens=usage.total_tokens),
+                           id=idx,
+                           object='chat.completion',
+                           choices=[
+                               Choice(index=0, message=ChatCompletionMessage(role='assistant', content=content),
+                                      finish_reason='stop')]
+                           )
+            return cc
     async def image(
             self,
             key: str,
@@ -167,3 +224,14 @@ class GptImage2Chat(ChatVendor):
         except httpx.HTTPError as e:  # 连接/超时 (重试耗尽) -> 网关错误
             logger.error("上游连接失败: {}", e)
             raise APIError(status_code=502, message=f"上游不可达: {e}") from e
+if __name__ == '__main__':
+    # response = ImagesResponse()
+    # usage = response.usage
+    # content = ''.join([f"[None]({url})\n\n"] for url in response.data)
+    # x = ChatCompletion(usage=CompletionUsage(prompt_tokens=usage.input_tokens,completion_tokens=usage.output_tokens,total_tokens=usage.total_tokens),id='12',created=12,model='asd',object='chat.completion',choices=[Choice(index=0,message=ChatCompletionMessage(role='assistant',content='asdwe'),finish_reason='stop')])
+    x = ChatCompletionChunk(
+        # usage=CompletionUsage(prompt_tokens=usage.input_tokens,completion_tokens=usage.output_tokens,total_tokens=usage.total_tokens),
+                            id='12',created=12,model='asd',object='chat.completion.chunk',
+                            choices=[ChunkChoice(index=0,delta=ChoiceDelta(role='assistant',content='asdwe'),finish_reason='stop')])
+
+    print(x.model_dump())

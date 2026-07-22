@@ -126,6 +126,7 @@ def _build_registry() -> Registry:
     # from app.vendors.seedance import SeedanceVideoVendor
     from app.vendors.seedream2gemini import Seedream2GeminiVendor
     from app.vendors.gpt2image import GptImageVendor
+    from app.vendors.gpt2image_chat import GptImage2Chat
     reg = Registry()
 
     # ===== 视频生成 =====
@@ -144,6 +145,11 @@ def _build_registry() -> Registry:
         ServiceType.IMAGE,
         model_patterns=["gpt-image-2"],
         vendor=GptImageVendor(),
+    )
+    reg.register(
+        ServiceType.CHAT,
+        model_patterns=["gpt-image-2"],
+        vendor=GptImage2Chat(),
     )
 
     # 在这里继续注册新厂商：

@@ -34,6 +34,7 @@ class ChatVendor(BaseVendor):
         self,
         request: ChatRequest,
         api_key: Optional[str] = None,
+        base_url: Optional[str] = None
     ) -> dict | AsyncIterator[dict]:
         """处理对话请求。
 
